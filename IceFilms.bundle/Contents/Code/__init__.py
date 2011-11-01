@@ -24,7 +24,7 @@ ICEFILMS = 'logo.jpg'
 ICEFILMS_URL = "http://www.icefilms.info/"
 ICEFILMS_AJAX = ICEFILMS_URL+'membersonly/components/com_iceplayer/video.phpAjaxResp.php'
 ICEFILMS_REFERRER = 'http://www.icefilms.info'
-USER_AGENT = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3'
+USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_2) AppleWebKit/534.51.22 (KHTML, like Gecko) Version/5.1.1 Safari/534.51.22'
 
 ACCOUNT_STATUS="NONE"
 
@@ -52,18 +52,18 @@ def Start():
     MediaContainer.viewGroup = "InfoList"
     MediaContainer.art = R(ART)
 
-    MediaContainer.userAgent = "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; en-GB; rv:1.9.2.17) Gecko/20110420 Firefox/3.6.17"
-    MediaContainer.userAgent = "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3"   
+    MediaContainer.userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_2) AppleWebKit/534.51.22 (KHTML, like Gecko) Version/5.1.1 Safari/534.51.22"   
 	
     DirectoryItem.thumb = R(ICEFILMS)
     VideoItem.thumb = R(ICEFILMS)
     
-    HTTP.CacheTime = 2000000
-    HTTP.Headers['Accept'] = 'text/plain,text/html,*/*;q=0.3'
-    HTTP.Headers['Accept-Encoding'] = '*;q=0.1'
-    HTTP.Headers['TE'] = 'trailers'
-    HTTP.Headers['Connection'] = 'TE'
- 
+    HTTP.CacheTime = CACHE_1HOUR
+    #MediaContainer.userAgent = "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3" 
+    HTTP.Headers['Accept'] = 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+    HTTP.Headers['Accept-Encoding'] = '*gzip, deflate'
+    #HTTP.Headers['TE'] = 'trailers'
+    HTTP.Headers['Connection'] = 'keep-alive'
+    
 # see:
 #  http://dev.plexapp.com/docs/Functions.html#ValidatePrefs
 def ValidatePrefs():
@@ -120,22 +120,73 @@ def Authenticate():
 
   return accountStatus
 
-#
-# Example main menu referenced in the Start() method
-# for the 'Video' prefix handler
-#
 
 def VideoMainMenu():
     
     
-    Authenticate()
+  
     
     # Container acting sort of like a folder on
     # a file system containing other things like
     # "sub-folders", videos, music, etc
     # see:
     #  http://dev.plexapp.com/docs/Objects.html#MediaContainer
-    dir = MediaContainer(viewGroup="InfoList",httpCookies=HTTP.GetCookiesForURL('http://www.megaupload.com/'))
+    dir = MediaContainer(viewGroup="InfoList",httpCookies=HTTP.CookiesForURL('http://www.megaupload.com/'))
+    
+
+    # see:
+    #  http://dev.plexapp.com/docs/Objects.html#DirectoryItem
+    #  http://dev.plexapp.com/docs/Objects.html#function-objects
+    dir.Append(
+        Function(
+            DirectoryItem(
+                 MainMenu,
+                "Main Menu",
+                subtitle="Movies & TV Shows",
+                summary="Watch High Quality Movies & TV Shows. Your one stop shop for DVD and BluRay releases.",
+                thumb=R(ICEFILMS),
+                art=R(ART)
+            )
+        )
+    )
+    
+
+  
+
+
+  
+    # Part of the "preferences" example 
+    # see also:
+    #  http://dev.plexapp.com/docs/Objects.html#PrefsItem
+    #  http://dev.plexapp.com/docs/Functions.html#CreatePrefs
+    #  http://dev.plexapp.com/docs/Functions.html#ValidatePrefs 
+    dir.Append(
+        PrefsItem(
+            title="Preferences",
+            subtile="Set your Megaupload Credentials here",
+            summary="If you have an account at Megaupload, use this feature to store the credentials",
+            thumb=R(PREFS_ICON)
+        )
+    )
+   
+    return dir
+
+#
+# Example main menu referenced in the Start() method
+# for the 'Video' prefix handler
+#
+
+def MainMenu(sender):
+    
+    
+    accountStatus = Authenticate()
+    
+    # Container acting sort of like a folder on
+    # a file system containing other things like
+    # "sub-folders", videos, music, etc
+    # see:
+    #  http://dev.plexapp.com/docs/Objects.html#MediaContainer
+    dir = MediaContainer(viewGroup="InfoList",httpCookies=HTTP.CookiesForURL('http://www.megaupload.com/'))
     
 
     # see:
@@ -150,7 +201,8 @@ def VideoMainMenu():
                 summary="Watch High Quality Movie in SD and HD formats. Your one stop shop for DVD and BluRay releases.",
                 thumb=R(ICEFILMS),
                 art=R(ART)
-            )
+            ),
+            accountStatus=accountStatus
         )
     )
     
@@ -163,7 +215,8 @@ def VideoMainMenu():
                 summary="Collection of TV Shows and Episodes",
                 thumb=R(ICEFILMS),
                 art=R(ART)
-            )
+            ),
+            accountStatus=accountStatus
         )
     )
   
@@ -180,32 +233,21 @@ def VideoMainMenu():
                 summary="Search for a title using this feature",
                 thumb=R(ICEFILMS),
                 art=R(ART)
-            )
+            ),
+            accountStatus=accountStatus
         )
     )
 
   
-    # Part of the "preferences" example 
-    # see also:
-    #  http://dev.plexapp.com/docs/Objects.html#PrefsItem
-    #  http://dev.plexapp.com/docs/Functions.html#CreatePrefs
-    #  http://dev.plexapp.com/docs/Functions.html#ValidatePrefs 
-    dir.Append(
-        PrefsItem(
-            title="Preferences",
-            subtile="Set your Megaupload Credentials here",
-            summary="If you have an account at Megaupload, use this feature to store the credentials",
-            thumb=R(PREFS_ICON)
-        )
-    )
+    
 	
 	
     # ... and then return the container
     
     
     return dir
-def TV(sender):
-    dir = MediaContainer(viewGroup="InfoList",httpCookies=HTTP.GetCookiesForURL('http://www.megaupload.com/'))
+def TV(sender,accountStatus=None):
+    dir = MediaContainer(viewGroup="InfoList",httpCookies=HTTP.CookiesForURL('http://www.megaupload.com/'))
     
     dir.Append(
      Function(
@@ -217,7 +259,8 @@ def TV(sender):
 	     thumb=R(ICEFILMS),
 	     art=R(ART)
 	 ),
-	 mode="tv"
+	 mode="tv",
+     accountStatus=accountStatus
      )
     )
     
@@ -232,7 +275,8 @@ def TV(sender):
 	     art=R(ART)
 	 ),
 	 HD="All",
-	 mode="tv"
+	 mode="tv",
+     accountStatus=accountStatus
      )
     )
     
@@ -240,8 +284,8 @@ def TV(sender):
     
     return dir
 
-def Movies(sender):
-    dir = MediaContainer(viewGroup="InfoList",httpCookies=HTTP.GetCookiesForURL('http://www.megaupload.com/'))
+def Movies(sender,accountStatus=None):
+    dir = MediaContainer(viewGroup="InfoList",httpCookies=HTTP.CookiesForURL('http://www.megaupload.com/'))
     
     dir.Append(
      Function(
@@ -253,7 +297,8 @@ def Movies(sender):
 	     thumb=R(ICEFILMS),
 	     art=R(ART)
 	 ),
-	 mode="movies"
+	 mode="movies",
+     accountStatus=accountStatus
      )
     )
     
@@ -268,7 +313,8 @@ def Movies(sender):
 	     art=R(ART)
 	 ),
 	 HD="All",
-	 mode="movies"
+	 mode="movies",
+     accountStatus=accountStatus
      )
     )
     
@@ -285,14 +331,15 @@ def Movies(sender):
 	     art=R(ART)
 	 ),
 	 HD="HD",
-	 mode="movies"
+	 mode="movies",
+     accountStatus=accountStatus
      )
     )
     
     return dir
 
-def AZList(sender,mode):
-    mc = MediaContainer( viewGroup = "/video/icefilms/TV" ,httpCookies=HTTP.GetCookiesForURL('http://www.megaupload.com/'))
+def AZList(sender,mode,accountStatus=None):
+    mc = MediaContainer( viewGroup = "/video/icefilms/TV" ,httpCookies=HTTP.CookiesForURL('http://www.megaupload.com/'))
     azList = ['#1234','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
     
     
@@ -314,16 +361,17 @@ def AZList(sender,mode):
 		   art=R(ART)
 		),
 		alpha=value,
-		mode=mode
+		mode=mode,
+     	accountStatus=accountStatus
 	    )
 	)
 	  
     return mc
 
 
-def ShowMoviesAndTV(sender,HD=None,mode=None):
+def ShowMoviesAndTV(sender,HD=None,mode=None,accountStatus=None):
     
-    mc = MediaContainer( viewGroup = "/video/icefilms/TV" ,httpCookies=HTTP.GetCookiesForURL('http://www.megaupload.com/'))
+    mc = MediaContainer( viewGroup = "/video/icefilms/TV" ,httpCookies=HTTP.CookiesForURL('http://www.megaupload.com/'))
     func_name=""
     
     if (HD =="HD" and mode=="movies"):
@@ -345,7 +393,8 @@ def ShowMoviesAndTV(sender,HD=None,mode=None):
 	     thumb=R(ICEFILMS),
 	     art=R(ART)
 	 ),
-	mode="popular"
+	mode="popular",
+    accountStatus=accountStatus
      )
     )
     
@@ -359,7 +408,8 @@ def ShowMoviesAndTV(sender,HD=None,mode=None):
 	     thumb=R(ICEFILMS),
 	     art=R(ART)
 	 ),
-	 mode='rating'
+	 mode='rating',
+     accountStatus=accountStatus
      )
     )
     
@@ -373,7 +423,8 @@ def ShowMoviesAndTV(sender,HD=None,mode=None):
 	     thumb=R(ICEFILMS),
 	     art=R(ART)
 	 ),
-	 mode='release'
+	 mode='release',
+     accountStatus=accountStatus
      )
     )
     
@@ -387,20 +438,21 @@ def ShowMoviesAndTV(sender,HD=None,mode=None):
 	     thumb=R(ICEFILMS),
 	     art=R(ART)
 	 ),
-	 mode='added'
+	 mode='added',
+     accountStatus=accountStatus
      )
     )
     
     return mc
 
 
-def ShowAlphaListForMovies(sender,alpha=None,mode=None):
+def ShowAlphaListForMovies(sender,alpha=None,mode=None,accountStatus=None):
 
     ## you might want to try making me return a MediaContainer
     ## containing a list of DirectoryItems to see what happens =)
         
 	
-	mc = MediaContainer( viewGroup = "/video/icefilms/TV" ,httpCookies=HTTP.GetCookiesForURL('http://www.megaupload.com/'))
+	mc = MediaContainer( viewGroup = "/video/icefilms/TV" ,httpCookies=HTTP.CookiesForURL('http://www.megaupload.com/'))
 	
 	if(alpha=='#1234') :
 	    alpha='1'
@@ -425,13 +477,14 @@ def ShowAlphaListForMovies(sender,alpha=None,mode=None):
 	    #,thumb=TV_thumb(url)
 	    ),
 	    title = title,
-	    url = url
+	    url = url,
+    	accountStatus=accountStatus
 		)
 	)
 
 
 	return mc
-def ShowAlphaListForTV(sender,alpha=None,mode=None):
+def ShowAlphaListForTV(sender,alpha=None,mode=None,accountStatus=None):
 
     ## you might want to try making me return a MediaContainer
     ## containing a list of DirectoryItems to see what happens =)
@@ -458,7 +511,8 @@ def ShowAlphaListForTV(sender,alpha=None,mode=None):
 					#,thumb=TV_thumb(url)
 				),
 				title = title,
-				url = url
+				url = url,
+    			accountStatus=accountStatus
 			)
 		)
 
@@ -466,13 +520,13 @@ def ShowAlphaListForTV(sender,alpha=None,mode=None):
 	return mc
     
 
-def Movies_All(sender,mode=None):
+def Movies_All(sender,mode=None,accountStatus=None):
 
     ## you might want to try making me return a MediaContainer
     ## containing a list of DirectoryItems to see what happens =)
         
 	
-	mc = MediaContainer( viewGroup = "/video/icefilms/TV" ,httpCookies=HTTP.GetCookiesForURL('http://www.megaupload.com/'))
+	mc = MediaContainer( viewGroup = "/video/icefilms/TV" ,httpCookies=HTTP.CookiesForURL('http://www.megaupload.com/'))
 	
 	
 	tv_page = HTTP.Request( ICEFILMS_URL+"movies/"+ mode+"/1" )
@@ -495,7 +549,8 @@ def Movies_All(sender,mode=None):
 	    #,thumb=TV_thumb(url)
 	    ),
 	    title = title,
-	    url = url
+	    url = url,
+    	accountStatus=accountStatus
 		)
 	)
 
@@ -504,12 +559,12 @@ def Movies_All(sender,mode=None):
     
 
 
-def Movies_HD(sender,mode=None):
+def Movies_HD(sender,mode=None,accountStatus=None):
 
     ## you might want to try making me return a MediaContainer
     ## containing a list of DirectoryItems to see what happens =)
         
-	mc = MediaContainer( viewGroup = "/video/icefilms/TV",httpCookies=HTTP.GetCookiesForURL('http://www.megaupload.com/') )
+	mc = MediaContainer( viewGroup = "/video/icefilms/TV",httpCookies=HTTP.CookiesForURL('http://www.megaupload.com/') )
 	
 	
 	tv_page = HTTP.Request( ICEFILMS_URL+"movies/" + mode + "/hd" )
@@ -533,7 +588,8 @@ def Movies_HD(sender,mode=None):
 	    ),
 	    title = title,
 	    url = url,
-	    HD = True
+	    HD = True,
+    	accountStatus=accountStatus
 		)
 	)
 
@@ -542,7 +598,7 @@ def Movies_HD(sender,mode=None):
     
 
 
-def TV_All(sender,mode=None):
+def TV_All(sender,mode=None,accountStatus=None):
 
     ## you might want to try making me return a MediaContainer
     ## containing a list of DirectoryItems to see what happens =)
@@ -569,7 +625,8 @@ def TV_All(sender,mode=None):
 					#,thumb=TV_thumb(url)
 				),
 				title = title,
-				url = url
+				url = url,
+    			accountStatus=accountStatus
 			)
 		)
 
@@ -577,24 +634,26 @@ def TV_All(sender,mode=None):
 	return mc
     
     
-def TV_Episodes(sender,title,url):
+def TV_Episodes(sender,title,url,accountStatus=None):
     mc = MediaContainer( viewGroup = "/video/icefilms/TV/" + url )
     show_page = HTTP.Request( ICEFILMS_URL+"" + url )
     show_page = str(show_page)
     seasons_html = re.compile('<span class=list>(.+?)</span>').findall(show_page)
  
-    seasonNames  = re.compile('<h4>(.+?)</h4>').findall(seasons_html[0])
+    seasonNames  = re.compile('<h3>(.+?)</h3>').findall(seasons_html[0])
     
    
-    searchSource = seasons_html[0]+"<h4>"
+    searchSource = seasons_html[0]+"<h3>"
    
     for seasonName in seasonNames :
-	episodeTitle=seasonName
+	episodeTitles = re.compile('<a name=(.+?)></a>(.+?)<a').findall(seasonName)
+	
+	episodeTitle=episodeTitles[0][1]
 	
 	if re.search('\(',seasonName) is not None:
          seasonName = str((re.split('\(+', seasonName))[0])
 	
-	filter = '<h4>'+seasonName+'.+?</h4>(.+?)<h4>'
+	filter = '<h3>'+seasonName+'.+?</h3>(.+?)<h3>'
 	
 	seasonSource = re.compile(filter).findall(searchSource)
 	mc.Append(
@@ -607,13 +666,14 @@ def TV_Episodes(sender,title,url):
 					,thumb=TV_thumb(url)
 				),
 				title = title,
-				show_page = seasonSource[0]
+				show_page = seasonSource[0],
+   				accountStatus=accountStatus
 			)
 		)
     return mc
 
 
-def TV_Show( sender , title , show_page ):
+def TV_Show( sender , title , show_page,accountStatus=None ):
         
 	
 	mc = MediaContainer( viewGroup = "/video/icefilms/TV/")
@@ -637,13 +697,14 @@ def TV_Show( sender , title , show_page ):
 						
 					),
 					title = title + " -- " + episode_Title,
-					url = url
+					url = url,
+    				accountStatus=accountStatus
 				)
 			)
 		
 	return mc
 
-def TV_Data( sender , title , url ):
+def TV_Data( sender , title , url , accountStatus=None ):
 
 	t=""
 	secret=""
@@ -651,10 +712,9 @@ def TV_Data( sender , title , url ):
 	cap="B3H9"
 	
 	try:
-	    accountStatus = ""
-	    accountStatus = Authenticate()
+	    
     
-	    mc = MediaContainer( viewGroup = "/video/icefilms/TV/" + url + "2" ,httpCookies=HTTP.GetCookiesForURL('http://www.megaupload.com/'))
+	    mc = MediaContainer( viewGroup = "/video/icefilms/TV/" + url + "2" ,httpCookies=HTTP.CookiesForURL('http://www.megaupload.com/'))
 	    data_page = HTTP.Request( ICEFILMS_URL + url , cacheTime = 5 )
 	    data_page = str(data_page)
     
@@ -702,19 +762,18 @@ def TV_Data( sender , title , url ):
 	    "   ",
 	    "Apparently, something unfortunate has \nhappened. Your request cannot be  \ncarried out at this time. \n Please Try later"
 	)
-def Movie_Data( sender , title , url ,HD=None):
+def Movie_Data( sender , title , url ,HD=None,accountStatus=None):
 
 	
 	t=""
 	secret=""
 	id=""
 	cap="B3H9"
-	accountStatus = ""
-        accountStatus = Authenticate()
+	
 	
 	try:
 	
-	    mc = MediaContainer( viewGroup = "/video/icefilms/TV/" + url + "2" ,httpCookies=HTTP.GetCookiesForURL('http://www.megaupload.com/'))
+	    mc = MediaContainer( viewGroup = "/video/icefilms/TV/" + url + "2" ,httpCookies=HTTP.CookiesForURL('http://www.megaupload.com/'))
 	    data_page = HTTP.Request( ICEFILMS_URL + url , cacheTime = 5 )
 	    data_page = str(data_page)
 	    
@@ -864,7 +923,7 @@ def GetSource(id, args):
 
 def GetFinalURL(post_values):
     
-    next_page = HTTP.Request( ICEFILMS_URL+"membersonly/components/com_iceplayer/video.phpAjaxResp.php", post_values , { "User-Agent" : "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3" , "Referer" : "http://www.icefilms.info" } )
+    next_page = HTTP.Request( ICEFILMS_URL+"membersonly/components/com_iceplayer/video.phpAjaxResp.php", post_values )
     next_page = str(next_page)
     
   
@@ -885,25 +944,26 @@ def AddMediaItem(name,url,mc,title,plotSummary,accountStatus,thumbURL):
     
     if url is not None:
       if(accountStatus=='None') :
-	 name=name+" (Wait 45 Secs) "
+	     name=name+" (Wait 45 Secs) "
       elif(accountStatus==''):
-	 name=name+" (Wait 25 Sec) "
-      
-    mc.Append(
-	    Function(
-		    DirectoryItem(
-			    get_stream,
-			    title = name,
-			    subtitle = title,
-			    summary=plotSummary
-			    ,thumb=TV_thumb(thumbURL)
-			    
-		    ),
-		    title = title ,
-		    url = url,
-		    accountStatus=accountStatus
-	    )
-    )
+	     name=name+" (Wait 25 Sec) "
+	    
+      mc.Append(
+     	Function(
+	    	DirectoryItem(
+		    	get_stream,
+		    	title = name,
+		    	subtitle = title,
+		    	summary=plotSummary
+		    	,thumb=TV_thumb(thumbURL)
+				),
+	    		title = title ,
+	    		url = url,
+	    		accountStatus=accountStatus
+    		)
+        )
+        
+    
              
     return mc
 
@@ -912,8 +972,8 @@ def AddMediaItem(name,url,mc,title,plotSummary,accountStatus,thumbURL):
 
 def get_stream( sender , title , url ,accountStatus):
      
-     mc = MediaContainer( viewGroup = "/video/icefilms/TV/" + url + "2" ,httpCookies=HTTP.GetCookiesForURL('http://www.megaupload.com/'))
-     #Log("URL = " + url)
+     mc = MediaContainer( viewGroup = "/video/icefilms/TV/" + url + "2" ,httpCookies=HTTP.CookiesForURL('http://www.megaupload.com/'))
+     #Log("Get Stream URL = " + url)
      HTTP.ClearCookies()
      data_page = HTTP.Request( url,cacheTime=0)
      data_page = str(data_page)
@@ -927,16 +987,21 @@ def get_stream( sender , title , url ,accountStatus):
       finalurl=match1[0]
      
      #Log("Download Link " + finalurl)
-     
+     #response = HTTP.Request("http://hoangmanhhiep.info/mu/",{"urllist":url})
+     #response = str(response)
+     #responseEL = HTML.ElementFromString(response)
+     #finalurl = responseEL.xpath("/html/body/center[2]/textarea/text()")[0]
+     #Log(finalurl)
+     #finalurl = finalurl.strip()
      mc.Append(VideoItem(finalurl, "Play Now : "+title,subtitle=title))
      if(accountStatus=='premium'):
-       time.sleep(float(3))
+       time.sleep(float(1))
        return mc
      elif(accountStatus=='None'):
-       time.sleep(float(47))
+       time.sleep(float(46))
        return mc
      else:
-       time.sleep(float(27))
+       time.sleep(float(26))
        return mc
     
 def GetURL(url, params = None, referrer = ICEFILMS_REFERRER, cookie = None, save_cookie = False):
@@ -978,22 +1043,22 @@ def GetURL(url, params = None, referrer = ICEFILMS_REFERRER, cookie = None, save
      return body
 
 
-def SEARCH(mc,search):
+def SEARCH(mc,search,accountStatus=None):
      #kb = xbmc.Keyboard('', 'Search Icefilms.info', False)
      #kb.doModal()
      #if (kb.isConfirmed()):
           
           if search != '':
              
-             DoEpListSearch(mc,search)
-             DoSearch(mc,search,0)
-             DoSearch(mc,search,1)
-             DoSearch(mc,search,2)
+             DoEpListSearch(mc,search,accountStatus)
+             DoSearch(mc,search,0,accountStatus)
+             DoSearch(mc,search,1,accountStatus)
+             DoSearch(mc,search,2,accountStatus)
              #delete tv show name file, do the same for season name file
              
                
                                
-def DoSearch(mc,search,page):        
+def DoSearch(mc,search,page,accountStatus=None):        
 	gs = GoogleSearch('site:'+ICEFILMS_URL+'ip '+search+'')
         gs.results_per_page = 25
         gs.page = page
@@ -1008,7 +1073,7 @@ def DoSearch(mc,search,page):
 		
 		addSearchResult(mc,name,match,'Movie')
 
-def DoEpListSearch(mc,search):
+def DoEpListSearch(mc,search,accountStatus=None):
                tvurl=ICEFILMS_URL+'tv/series'              
 
                # use urllib.quote_plus() on search instead of re.sub ?
@@ -1060,7 +1125,7 @@ def CLEANSEARCH(name):
         return name
 
 
-def addSearchResult(mc,name,url,mode):
+def addSearchResult(mc,name,url,mode,accountStatus=None):
     
     if mode is 'TV':
 	mc.Append(
@@ -1071,7 +1136,8 @@ def addSearchResult(mc,name,url,mode):
 	   thumb=TV_thumb(url)
 	  ),
 	  title = name,
-	  url = url
+	  url = url,
+      accountStatus=accountStatus
 	 )
 	)
     elif mode is 'Movie':
@@ -1083,7 +1149,8 @@ def addSearchResult(mc,name,url,mode):
 	   thumb=TV_thumb(url)
 	  ),
 	  title = name,
-	  url = url
+	  url = url,
+      accountStatus=accountStatus
 	 )
 	)
 
@@ -1112,9 +1179,9 @@ def TV_thumb(url):
 # query will contain the string that the user entered
 # see also:
 #   http://dev.plexapp.com/docs/Objects.html#InputDirectoryItem
-def SearchResults(sender,query=None):
+def SearchResults(sender,query=None,accountStatus=None):
     
-    mc = MediaContainer( viewGroup = "/video/icefilms/TV/Search"  + "1" ,httpCookies=HTTP.GetCookiesForURL('http://www.megaupload.com/'))
+    mc = MediaContainer( viewGroup = "/video/icefilms/TV/Search"  + "1" ,httpCookies=HTTP.CookiesForURL('http://www.megaupload.com/'))
     SEARCH(mc,query)
     if(len(mc) >0) :
 	return mc
